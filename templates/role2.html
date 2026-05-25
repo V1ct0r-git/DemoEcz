@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ role_name }} - {{ subject_name }}{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1.5rem;">🔧 Заказы в работе</h1>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-size: 1.25rem; font-weight: bold;">#{{ order.id }}. {{ order.title }}</span>
+                    
+                    {% if order.status == status_new %}
+                        <span class="status-badge status-new">Новый</span>
+                    {% elif order.status == status_accepted %}
+                        <span class="status-badge status-accepted">Принят</span>
+                    {% elif order.status == status_in_progress %}
+                        <span class="status-badge status-in_progress">В работе</span>
+                    {% elif order.status == status_ready %}
+                        <span class="status-badge status-ready">Готов</span>
+                    {% endif %}
+                </div>
+                
+                {% if order.description %}
+                <p style="color: #666; margin-bottom: 1rem;">{{ order.description }}</p>
+                {% endif %}
+                
+                <div style="font-size: 0.875rem; color: #999; margin-bottom: 0.5rem;">
+                    📅 {{ order.date_created.strftime('%d.%m.%Y %H:%M') }} | 
+                    👤 Автор: {{ order.author.full_name if order.author else 'Удален' }}
+                </div>
+                
+                <!-- Позиции заказа -->
+                {% if order.items %}
+                <div style="margin-top: 1rem;">
+                    <strong>Позиции:</strong>
+                    <table style="margin-top: 0.5rem; font-size: 0.875rem;">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Кол-во</th>
+                                <th>Цена</th>
+                                <th>Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ "%.2f"|format(item.price) }} ₽</td>
+                                <td><strong>{{ "%.2f"|format(item.total) }} ₽</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="text-align: right;"><strong>Итого:</strong></td>
+                                <td><strong>{{ "%.2f"|format(order.items|sum(attribute='total')) }} ₽</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-left: 1rem;">
+                {% if order.status == status_new or order.status == status_accepted %}
+                    <a href="/worker/accept/{{ order.id }}" class="btn btn-warning btn-sm">
+                        ▶️ Принять в работу
+                    </a>
+                {% endif %}
+                
+                {% if order.status == status_in_progress %}
+                    <a href="/worker/complete/{{ order.id }}" class="btn btn-success btn-sm">
+                        ✅ Готово
+                    </a>
+                {% endif %}
+                
+                {% if order.status == status_ready %}
+                    <span style="color: #27ae60; font-weight: bold;">✓ Выполнен</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card text-center">
+        <p style="color: #666; margin: 2rem 0;">Нет заказов в работе</p>
+        <p style="color: #999; font-size: 0.875rem;">Ожидайте новые заказы от создателя</p>
+    </div>
+{% endif %}
+{% endblock %}
