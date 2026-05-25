@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ subject_name }}{% endblock %}</title>
+    <style>
+        /* ============================================
+           БАЗОВЫЕ СТИЛИ (Без внешних зависимостей)
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* ============================================
+           НАВИГАЦИОННАЯ ПАНЕЛЬ
+           ============================================ */
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .navbar-nav {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+        }
+        
+        .navbar-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .navbar-nav a:hover {
+            background-color: #34495e;
+        }
+        
+        .navbar-nav .logout {
+            background-color: #e74c3c;
+        }
+        
+        .navbar-nav .logout:hover {
+            background-color: #c0392b;
+        }
+        
+        /* ============================================
+           КОНТЕЙНЕР И КАРТОЧКИ
+           ============================================ */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        /* ============================================
+           ТАБЛИЦЫ
+           ============================================ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        table th, table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* ============================================
+           СТАТУСЫ (Цветовые индикаторы)
+           ============================================ */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-new { background-color: #3498db; color: white; }
+        .status-accepted { background-color: #9b59b6; color: white; }
+        .status-in_progress { background-color: #f39c12; color: white; }
+        .status-ready { background-color: #27ae60; color: white; }
+        
+        /* ============================================
+           КНОПКИ
+           ============================================ */
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        
+        .btn-success { background-color: #27ae60; color: white; }
+        .btn-success:hover { background-color: #219a52; }
+        
+        .btn-warning { background-color: #f39c12; color: white; }
+        .btn-warning:hover { background-color: #d68910; }
+        
+        .btn-danger { background-color: #e74c3c; color: white; }
+        .btn-danger:hover { background-color: #c0392b; }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* ============================================
+           ФОРМЫ
+           ============================================ */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* ============================================
+           СООБЩЕНИЯ (Flash messages)
+           ============================================ */
+        .alert {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        
+        /* ============================================
+           УТИЛИТЫ
+           ============================================ */
+        .text-muted { color: #6c757d; }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        
+        .flex-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">{{ subject_name }}</a>
+        
+        {% if current_user.is_authenticated %}
+        <ul class="navbar-nav">
+            <span style="color: #bdc3c7; margin-right: 1rem;">
+                👤 {{ current_user.full_name }} 
+                <span style="font-size: 0.875rem; opacity: 0.7;">({{ current_user.role }})</span>
+            </span>
+            
+            <!-- Меню для Администратора -->
+            {% if current_user.role == role_admin %}
+            <li><a href="/admin">📊 Админка</a></li>
+            {% endif %}
+            
+            <!-- Меню для Создателя (Официант/Диагност/Врач) -->
+            {% if current_user.role == role_creator %}
+            <li><a href="/creator">📝 Мои заказы</a></li>
+            <li><a href="/creator/new" class="btn btn-success btn-sm">+ Новый</a></li>
+            {% endif %}
+            
+            <!-- Меню для Исполнителя (Повар/Механик/Медсестра) -->
+            {% if current_user.role == role_worker %}
+            <li><a href="/worker">🔧 Мои задачи</a></li>
+            {% endif %}
+            
+            <li><a href="/logout" class="logout">🚪 Выход</a></li>
+        </ul>
+        {% endif %}
+    </nav>
+    
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Flash сообщения -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Контент страницы -->
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель - {{ subject_name }}{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 1.5rem;">📊 Панель администратора</h1>
+
+<!-- Секция: Пользователи -->
+<div class="card">
+    <div class="card-header">
+        👥 Пользователи
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Логин</th>
+                <th>ФИО</th>
+                <th>Роль</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td><strong>{{ user.login }}</strong></td>
+                <td>{{ user.full_name }}</td>
+                <td>
+                    {% if user.role == role_admin %}
+                        <span class="status-badge status-ready">👑 {{ user.role }}</span>
+                    {% elif user.role == role_creator %}
+                        <span class="status-badge status-new">📝 {{ user.role }}</span>
+                    {% elif user.role == role_worker %}
+                        <span class="status-badge status-in_progress">🔧 {{ user.role }}</span>
+                    {% else %}
+                        <span class="status-badge">{{ user.role }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.is_blocked %}
+                        <span class="status-badge status-ready" style="background-color: #e74c3c;">Заблокирован</span>
+                    {% else %}
+                        <span class="status-badge status-new">Активен</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/admin/block_user/{{ user.id }}" class="btn btn-sm {% if user.is_blocked %}btn-success{% else %}btn-warning{% endif %}">
+                        {% if user.is_blocked %}Разблокировать{% else %}Заблокировать{% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Секция: Все заказы -->
+<div class="card">
+    <div class="card-header">
+        📋 Все заказы
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Автор</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Позиций</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td><strong>{{ order.title }}</strong></td>
+                <td>{{ order.author.full_name if order.author else 'Удален' }}</td>
+                <td>
+                    {% if order.status == status_new %}
+                        <span class="status-badge status-new">Новый</span>
+                    {% elif order.status == status_accepted %}
+                        <span class="status-badge status-accepted">Принят</span>
+                    {% elif order.status == status_in_progress %}
+                        <span class="status-badge status-in_progress">В работе</span>
+                    {% elif order.status == status_ready %}
+                        <span class="status-badge status-ready">Готов</span>
+                    {% endif %}
+                </td>
+                <td>{{ order.date_created.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td>{{ order.items|length }}</td>
+                <td>
+                    <a href="/admin/delete_order/{{ order.id }}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Удалить заказ?')">
+                        Удалить
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
