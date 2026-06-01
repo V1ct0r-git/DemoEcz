@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Заказы</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            margin-top: 15px;
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            vertical-align: top; 
+            text-align: left;
+        }
+        th { 
+            background: #f2f2f2; 
+            font-weight: bold;
+        }
+        tr:hover {
+            background: #f9f9f9;
+        }
+        .status { 
+            padding: 5px 10px; 
+            border-radius: 4px; 
+            color: white; 
+            font-weight: bold; 
+            display: inline-block;
+            font-size: 0.9em;
+        }
+        .s-принят { background: #2196F3; }
+        .s-оплачен { background: #FF9800; }
+        .s-готовится { background: #9C27B0; }
+        .s-готов { background: #4CAF50; }
+        
+        .btn-status { 
+            padding: 6px 12px; 
+            margin: 2px 0; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 4px; 
+            color: white; 
+            font-size: 13px;
+            width: 100%;
+        }
+        .btn-oplachen { background: #FF9800; }
+        .btn-gotovitsya { background: #9C27B0; }
+        .btn-gotov { background: #4CAF50; }
+        .btn-status:hover { opacity: 0.9; }
+        
+        .parts-info {
+            font-size: 0.85em;
+            color: #555;
+            margin-top: 5px;
+        }
+        .part-item {
+            background: #f5f5f5;
+            padding: 3px 6px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Управление заказами</h1>
+            <p>Роль: {{ role }}</p>
+        </div>
+        
+        <div class="menu">
+            <!-- Верхняя панель -->
+            <div style="display:flex; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #4CAF50;">
+                
+                <!-- ЛЕВАЯ ЧАСТЬ: меняется в зависимости от роли -->
+                <div>
+                    {% if role == 'receptionist' %}
+                        <a href="{{ url_for('dashboard') }}" style="text-decoration:none; color:#333; font-weight:bold;">← Меню</a>
+                    {% elif role == 'diagnostician' %}
+                        <a href="{{ url_for('create_order') }}" style="background:#4CAF50; color:white; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold;">+ Новый заказ</a>
+                    {% elif role == 'mechanic' %}
+                        <span style="font-weight:bold; color:#555;">Заказы за смену</span>
+                    {% endif %}
+                </div>
+
+                <!-- ПРАВАЯ ЧАСТЬ: margin-left: auto всегда прижимает элемент вправо -->
+                <a href="{{ url_for('logout') }}" onclick="return confirm('⚠️ Вы действительно хотите выйти из системы?')" 
+                style="background:#d32f2f; color:white; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2); margin-left: auto;">
+                🚪 Выйти
+                </a>
+            </div>
+            
+            <div style="clear:both;"></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Клиент</th>
+                        <th>Элемент авто</th>
+                        <th>Повреждений</th>
+                        <th>Детали/Жидкости</th>
+                        <th>Диагност</th>
+                        <th>Механик</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr>
+                        <td>{{ o.id }}</td>
+                        <td>{{ o.client_name }}</td>
+                        <td>{{ o.car_element }}</td>
+                        <td>{{ o.damage_count }}</td>
+                        <td>
+                            <!-- Текстовый комментарий диагноста -->
+                            {% if o.parts_fluids %}
+                                <div style="font-size:0.9em; color:#555; margin-bottom:5px;">
+                                    <em>"{{ o.parts_fluids }}"</em>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Конкретные запчасти из базы (важно для механика) -->
+                            {% if o.parts_list %}
+                                <div style="font-size:0.85em; color:#2196F3; background:#e3f2fd; padding:5px; border-radius:4px;">
+                                    <strong>📦 Запчасти:</strong><br>
+                                    {{ o.parts_list }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if not o.parts_fluids and not o.parts_list %}
+                                <span style="color:#ccc;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ o.diag_name or '—' }}</td>
+                        <td>{{ o.mech_name or '—' }}</td>
+                        <td><span class="status s-{{ o.status }}">{{ o.status }}</span></td>
+                        <td style="width: 150px;">
+                            {% if role == 'diagnostician' and o.status == 'принят' %}
+                            <form method="POST" action="{{ url_for('update_order_status', order_id=o.id) }}">
+                                <input type="hidden" name="status" value="оплачен">
+                                <button type="submit" class="btn-status btn-oplachen">Оплачен</button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if role == 'mechanic' %}
+                                {% if o.status == 'оплачен' %}
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=o.id) }}">
+                                    <input type="hidden" name="status" value="готовится">
+                                    <button type="submit" class="btn-status btn-gotovitsya">В работу</button>
+                                </form>
+                                {% elif o.status == 'готовится' %}
+                                <form method="POST" action="{{ url_for('update_order_status', order_id=o.id) }}">
+                                    <input type="hidden" name="status" value="готов">
+                                    <button type="submit" class="btn-status btn-gotov">Готов</button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if role == 'receptionist' %}
+                            <span style="color:#999; font-size:0.85em;">Просмотр</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="empty-message">Заказов пока нет</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Панель управления</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+
+        {% if success_msg %}
+        <div style="background:#e8f5e9; color:#2e7d32; padding:15px; border-radius:5px; margin-bottom:20px; text-align:center;">
+            {{ success_msg }}
+        </div>
+        {% endif %}
+
+        <div class="header">
+            <h1>Добро пожаловать, {{ full_name }}!</h1>
+            <p>Ваша роль: {{ role }}</p>
+        </div>
+        
+        <div class="menu">
+            <!-- Верхняя панель -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #4CAF50;">
+                <h2 style="margin:0; color:#333;">Меню</h2>
+                
+                <a href="{{ url_for('logout') }}" onclick="return confirm('⚠️ Вы действительно хотите выйти из системы?')" 
+                style="background:#d32f2f; color:white; padding:10px 20px; text-decoration:none; border-radius:4px; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+                🚪 Выйти
+                </a>
+            </div>
+            
+            <!-- Кнопки меню -->
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;">
+                {% if role == 'receptionist' %}
+                    <a href="{{ url_for('employees') }}" class="menu-item">👥 Сотрудники</a>
+                    <a href="{{ url_for('shifts') }}" class="menu-item">📅 Смены</a>
+                    <a href="{{ url_for('parts_list') }}" class="menu-item">📦 Справочник</a>
+                    <a href="{{ url_for('check_fio_page') }}" class="menu-item">🔍 Проверка ФИО</a>
+                    <a href="{{ url_for('orders') }}" class="menu-item">📋 Заказы</a>
+                {% elif role == 'diagnostician' %}
+                    <a href="{{ url_for('orders') }}" class="menu-item">📋 Мои заказы</a>
+                {% elif role == 'mechanic' %}
+                    <a href="{{ url_for('orders') }}" class="menu-item">🔧 Заказы за смену</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

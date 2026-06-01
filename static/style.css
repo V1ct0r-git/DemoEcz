@@ -1,0 +1,170 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+/* Шапка */
+.header {
+    background: #4CAF50;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    margin: 0 0 10px 0;
+}
+
+/* Меню горизонтальное */
+.menu {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.menu h2 {
+    margin-top: 0;
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.menu-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.menu-item {
+    display: inline-block;
+    padding: 12px 20px;
+    background: #f9f9f9;
+    text-decoration: none;
+    color: #333;
+    border-radius: 5px;
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.menu-item:hover {
+    background: #e8f5e9;
+    border-left-color: #4CAF50;
+    transform: translateX(5px);
+}
+
+.logout {
+    color: #d32f2f !important;
+    background: #ffebee !important;
+}
+
+.logout:hover {
+    background: #ffcdd2 !important;
+}
+
+/* Форма входа */
+.login-container {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 30px;
+    background: white;
+    border-radius: 8px;
+}
+
+.error {
+    color: #d32f2f;
+    background: #ffebee;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+/* ... (ваши старые стили остаются) ... */
+
+/* Стили для Капчи */
+.captcha-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.puzzle-target {
+    display: grid;
+    grid-template-columns: 100px 100px;
+    grid-template-rows: 100px 100px;
+    gap: 5px;
+    margin: 15px auto;
+    background: #eee;
+    padding: 5px;
+    border-radius: 5px;
+    width: 210px;
+}
+
+.slot {
+    background: #fff;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #ccc;
+    transition: all 0.3s;
+}
+
+.slot.filled {
+    border: 2px solid #4CAF50;
+    background: #e8f5e9;
+}
+
+.pieces-pool {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    min-height: 60px;
+    flex-wrap: wrap;
+}
+
+.puzzle-piece {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    cursor: grab;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 1px solid #ddd;
+}
+
+.puzzle-piece:active {
+    cursor: grabbing;
+}
+
+.btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}

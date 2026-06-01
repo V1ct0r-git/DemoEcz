@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Справочник запчастей</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .btn-action { padding: 5px 10px; margin: 2px; border: none; border-radius: 4px; color: white; cursor: pointer; text-decoration: none; font-size: 13px; display: inline-block; }
+        .btn-edit { background: #2196F3; }
+        .btn-del { background: #d32f2f; }
+        .btn-add { background: #4CAF50; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; float: right; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header"><h1>Справочник запчастей и жидкостей</h1></div>
+        <div class="menu">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Меню</a>
+            <a href="{{ url_for('add_part') }}" class="btn-add">+ Добавить позицию</a>
+            <div style="clear:both;"></div>
+
+            <table>
+                <tr><th>ID</th><th>Название</th><th>Тип</th><th>Цена (₽)</th><th>Действия</th></tr>
+                {% for p in parts %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ 'Деталь' if p.part_type == 'detail' else 'Жидкость' }}</td>
+                    <td>{{ p.price }}</td>
+                    <td>
+                        <a href="{{ url_for('edit_part', part_id=p.id) }}" class="btn-action btn-edit">Изменить</a>
+                        <a href="{{ url_for('delete_part', part_id=p.id) }}" class="btn-action btn-del" onclick="return confirm('Удалить эту позицию?')">Удалить</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" style="text-align:center; padding:20px;">Справочник пуст. Добавьте первую запчасть.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

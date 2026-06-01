@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ 'Редактирование' if part else 'Добавление' }} запчасти</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h2>{{ 'Редактирование' if part else 'Новая позиция' }}</h2>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>Название:</label>
+                <input type="text" name="name" value="{{ part.name if part else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Цена (₽):</label>
+                <input type="number" step="0.01" name="price" value="{{ part.price if part else 0 }}" required>
+            </div>
+            <div class="form-group">
+                <label>Тип:</label>
+                <select name="part_type" required style="width:100%; padding:10px;">
+                    <option value="detail" {% if part and part.part_type=='detail' %}selected{% endif %}>Деталь</option>
+                    <option value="fluid" {% if part and part.part_type=='fluid' %}selected{% endif %}>Жидкость</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Сохранить</button>
+            <a href="{{ url_for('parts_list') }}" style="display:block; margin-top:15px; text-align:center;">Отмена</a>
+        </form>
+    </div>
+</body>
+</html>

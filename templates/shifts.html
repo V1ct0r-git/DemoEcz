@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Смены</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        .form-row div { flex: 1; min-width: 200px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input { width: 100%; padding: 8px; box-sizing: border-box; }
+        .btn-add { background: #2196F3; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Управление сменами</h1>
+        </div>
+
+        <div class="menu">
+            <a href="{{ url_for('dashboard') }}" class="btn-back">← Меню</a>
+            
+            <!-- Форма добавления смены -->
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-top: 20px; border: 1px solid #ddd;">
+                <h3>Создать новую смену</h3>
+                <form method="POST" action="{{ url_for('add_shift') }}">
+                    <div class="form-row">
+                        <div>
+                            <label>Дата:</label>
+                            <input type="date" name="date" required>
+                        </div>
+                        <div>
+                            <label>Тип смены:</label>
+                            <select name="shift_type">
+                                <option value="morning">Утренняя (08:00 - 16:00)</option>
+                                <option value="evening">Вечерняя (16:00 - 00:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div>
+                            <label>Автомеханик:</label>
+                            <select name="mechanic_id" required>
+                                <option value="">-- Выбрать --</option>
+                                {% for emp in employees %}
+                                    {% if emp.role == 'mechanic' %}
+                                        <option value="{{ emp.id }}">{{ emp.full_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label>Автодиагност:</label>
+                            <select name="diagnostician_id" required>
+                                <option value="">-- Выбрать --</option>
+                                {% for emp in employees %}
+                                    {% if emp.role == 'diagnostician' %}
+                                        <option value="{{ emp.id }}">{{ emp.full_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add">Назначить смену</button>
+                </form>
+            </div>
+
+            <!-- Таблица смен -->
+            <h3>Список назначенных смен</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Тип</th>
+                        <th>Механик</th>
+                        <th>Диагност</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in shifts %}
+                    <tr>
+                        <td>{{ s.date }}</td>
+                        <td>{{ 'Утро' if s.shift_type == 'morning' else 'Вечер' }}</td>
+                        <td>{{ s.mechanic_name or 'Не назначен' }}</td>
+                        <td>{{ s.diagnostician_name or 'Не назначен' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align:center;">Смен пока нет</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

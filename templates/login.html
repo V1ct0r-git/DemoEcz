@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <h2>Авторизация</h2>
+        
+        {% if error %}
+        <div class="error">
+            {{ error }}
+            {% if remaining_attempts is defined and remaining_attempts > 0 %}
+            <div style="margin-top: 8px; font-size: 14px; font-weight: bold; color: #b71c1c;">
+                ⚠️ Осталось попыток: {{ remaining_attempts }}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if blocked %}
+        <div class="error" style="background:#ffebee; color:#d32f2f; padding:15px; border-radius:5px; text-align:center;">
+            Вы заблокированы. Обратитесь к администратору
+        </div>
+        {% else %}
+        
+        <!-- onsubmit перехватывает и клик, и нажатие Enter -->
+        <form method="POST" id="loginForm" onsubmit="return checkCaptchaBeforeSubmit()">
+            <div class="captcha-section">
+                <p style="text-align:center; margin-bottom:15px;"><strong>Соберите изображение из фрагментов:</strong></p>
+                
+                <div class="puzzle-target">
+                    <div class="slot" data-pos="1">1</div>
+                    <div class="slot" data-pos="2">2</div>
+                    <div class="slot" data-pos="3">3</div>
+                    <div class="slot" data-pos="4">4</div>
+                </div>
+                
+                <div id="pieces-pool" class="pieces-pool"></div>
+                
+                <input type="hidden" name="captcha_solved" id="captcha_solved" value="0">
+                <p id="captcha-status" style="text-align:center; color:#666; font-size:14px; margin-top:10px;">
+                    Перетащите все 4 части на правильные места
+                </p>
+            </div>
+
+            <hr style="margin:20px 0; border:none; border-top:1px solid #ddd;">
+
+            <div class="form-group">
+                <label>Логин:</label>
+                <input type="text" name="username" required autocomplete="off">
+            </div>
+            
+            <div class="form-group">
+                <label>Пароль:</label>
+                <input type="password" name="password" required autocomplete="off">
+            </div>
+            
+            <button type="submit" class="btn">Войти</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <script>
+        let placedCount = 0;
+
+        const pieces = [
+            { id: '1', src: "{{ url_for('static', filename='captcha_parts/part1.png') }}", target: '1' },
+            { id: '2', src: "{{ url_for('static', filename='captcha_parts/part2.png') }}", target: '2' },
+            { id: '3', src: "{{ url_for('static', filename='captcha_parts/part3.png') }}", target: '3' },
+            { id: '4', src: "{{ url_for('static', filename='captcha_parts/part4.png') }}", target: '4' }
+        ];
+
+        pieces.sort(() => Math.random() - 0.5);
+        const pool = document.getElementById('pieces-pool');
+        const slots = document.querySelectorAll('.slot');
+
+        pieces.forEach(p => {
+            let div = document.createElement('div');
+            div.className = 'puzzle-piece';
+            div.draggable = true;
+            div.dataset.id = p.id;
+            div.dataset.target = p.target;
+            div.style.backgroundImage = `url(${p.src})`;
+            div.style.backgroundSize = 'cover';
+            
+            div.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('id', p.id);
+                e.dataTransfer.setData('target', p.target);
+                setTimeout(() => div.style.opacity = '0.4', 0);
+            });
+            div.addEventListener('dragend', () => div.style.opacity = '1');
+            pool.appendChild(div);
+        });
+
+        slots.forEach(slot => {
+            slot.addEventListener('dragover', e => e.preventDefault());
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                if (slot.classList.contains('filled')) return;
+                
+                let pieceId = e.dataTransfer.getData('id');
+                let piece = document.querySelector(`.puzzle-piece[data-id="${pieceId}"]`);
+                
+                slot.innerHTML = '';
+                slot.appendChild(piece);
+                slot.classList.add('filled');
+                piece.style.width = '100%'; piece.style.height = '100%';
+                piece.style.margin = '0'; piece.style.cursor = 'default';
+                piece.draggable = false;
+                
+                placedCount++;
+                checkCaptchaState();
+            });
+        });
+
+        function checkCaptchaState() {
+            let allCorrect = true;
+            if (placedCount < 4) {
+                allCorrect = false;
+            } else {
+                slots.forEach(s => {
+                    let p = s.querySelector('.puzzle-piece');
+                    if (!p || p.dataset.target !== s.dataset.pos) allCorrect = false;
+                });
+            }
+            document.getElementById('captcha_solved').value = allCorrect ? '1' : '0';
+        }
+
+        // ГЛАВНАЯ ПРОВЕРКА: вызывается при ЛЮБОЙ попытке отправки формы
+        function checkCaptchaBeforeSubmit() {
+            if (placedCount < 4) {
+                alert("⛔ Форма не отправлена! Необходимо разместить все 4 фрагмента капчи.");
+                return false; // Полностью отменяет отправку на сервер
+            }
+            return true; // Разрешает отправку
+        }
+    </script>
+</body>
+</html>

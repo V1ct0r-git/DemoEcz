@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Новый заказ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .parts-list { margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; }
+        .part-item { display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #eee; }
+        .selected-parts { margin-top: 10px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Создание нового заказа</h2>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        
+        <form method="POST">
+            <div class="form-group"><label>Клиент:</label><input type="text" name="client_name" required></div>
+            <div class="form-group"><label>Элемент авто:</label><input type="text" name="car_element" required></div>
+            <div class="form-group"><label>Кол-во повреждений:</label><input type="number" name="damage_count" value="1" min="1"></div>
+            
+            <!-- Выбор запчастей -->
+            <div class="form-group">
+                <label>Выбрать запчасти/жидкости:</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="partSelect" style="flex:2; padding:10px;">
+                        <option value="">-- Выберите деталь --</option>
+                        {% for part in parts %}
+                        <option value="{{ part.id }}" data-name="{{ part.name }}">{{ part.name }} ({{ part.price }} руб.)</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" id="partQty" value="1" min="1" style="flex:1; padding:10px;" placeholder="Кол-во">
+                    <button type="button" onclick="addPart()" style="flex:0.5; padding:10px; background:#2196F3; color:white; border:none; cursor:pointer;">+</button>
+                </div>
+                <div class="selected-parts">
+                    <strong>Добавлено:</strong>
+                    <div id="addedPartsList"></div>
+                </div>
+                <!-- Скрытое поле для передачи ID запчастей на сервер -->
+                <input type="hidden" name="selected_parts" id="selectedPartsInput">
+            </div>
+
+            <div class="form-group"><label>Комментарий (текстом):</label><textarea name="parts_fluids" rows="2" style="width:100%; padding:10px;"></textarea></div>
+            
+            <button type="submit" class="btn">Создать заказ</button>
+            <a href="{{ url_for('orders') }}" style="display:block; margin-top:15px; text-align:center;">Отмена</a>
+        </form>
+    </div>
+
+    <script>
+        let selectedParts = {}; // Храним { part_id: quantity }
+
+        function addPart() {
+            let select = document.getElementById('partSelect');
+            let qty = document.getElementById('partQty').value;
+            let partId = select.value;
+            let partName = select.options[select.selectedIndex].dataset.name;
+
+            if (!partId) return alert('Выберите запчасть!');
+            
+            // Если уже есть, суммируем, иначе добавляем
+            if (selectedParts[partId]) {
+                selectedParts[partId].qty = parseInt(selectedParts[partId].qty) + parseInt(qty);
+            } else {
+                selectedParts[partId] = { name: partName, qty: parseInt(qty) };
+            }
+            renderParts();
+        }
+
+        function renderParts() {
+            let list = document.getElementById('addedPartsList');
+            let input = document.getElementById('selectedPartsInput');
+            list.innerHTML = '';
+            let outputArr = [];
+
+            for (let id in selectedParts) {
+                let p = selectedParts[id];
+                list.innerHTML += `<div class="part-item"><span>${p.name}</span> <span>x${p.qty}</span></div>`;
+                outputArr.push(`${id}:${p.qty}`); // Формат ID:QTY,ID:QTY
+            }
+            input.value = outputArr.join(',');
+        }
+    </script>
+</body>
+</html>
